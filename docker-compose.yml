@@ -2,36 +2,31 @@ services:
   client:
     build: ./frontend
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT}:80"
     depends_on:
       - server
 
   server:
     build: ./backend
     ports:
-      - "5000:4000"
+      - "${BACKEND_PORT}:${BACKEND_INTERNAL_PORT}"
+    env_file: .env
     depends_on:
-      - db
-    restart: on-failure
-    environment:
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_NAME: testdb
-      DB_USER: root
-      DB_PASSWORD: password
-      PORT: 4000
-      NODE_ENV: development
+      db:
+        condition: service_healthy
+    restart: always
 
   db:
     image: mysql:8
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: testdb
-    ports:
-      - "3307:3306"
+    env_file: .env
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:
