@@ -12,6 +12,15 @@ services:
       - "5000:4000"
     depends_on:
       - db
+    restart: on-failure
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: testdb
+      DB_USER: root
+      DB_PASSWORD: password
+      PORT: 4000
+      NODE_ENV: development
 
   db:
     image: mysql:8
